@@ -27,7 +27,7 @@
             align-items: center;
             top: 150px;
             left: 150px;
-            background-color: #81af81;
+            background-color: #39812f;
             padding: 20px;
             width: 400px;
             height: 100px;
@@ -44,18 +44,21 @@
             width: 20px;
             height: 20px;
             background-color: transparent; /* Transparent background */
-            border: 2px solid #81af81;
+            border: 2px solid #39812f;
             border-radius: 50%;
             cursor: nwse-resize;
         }
 
         .number-display {
             display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .number-display img {
-            width: 50px; /* Adjust the size of the numbers */
+            width: 50px; /* Default size */
             height: auto;
+            margin: 0 5px; /* Default margin between images */
         }
 
         .unit {
@@ -92,6 +95,30 @@
         }
 
         .font-size-input-unit {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .image-size-input {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .space-input {
             font-size: 20px;
             padding: 10px;
             border: none;
@@ -151,6 +178,9 @@
     <input type="number" id="fontSizeInput" class="font-size-input" value="70" min="10" max="200" oninput="changeFontSize()">
     <input type="number" id="fontSizeInputUnit" class="font-size-input-unit" value="30" min="10" max="100" oninput="changeFontSizeUnit()">
     
+    <input type="number" id="imageSizeInput" class="image-size-input" value="50" min="10" max="100" oninput="changeImageSize()" placeholder="Image size">
+    <input type="number" id="spaceInput" class="space-input" value="5" min="0" max="50" oninput="changeSpace()" placeholder="Space between">
+
     <div class="color-buttons">
         <button class="color-button color-button-1" onclick="changeColor('#6b7c6a')">🔘</button>
         <button class="color-button color-button-2" onclick="changeColor('#39812f')">🔘</button>
@@ -223,30 +253,30 @@
 
         function stopResize() {
             isResizing = false;
+            document.removeEventListener("mousemove", resize);
+            document.removeEventListener("touchmove", resize, { passive: false });
+            document.removeEventListener("mouseup", stopResize);
+            document.removeEventListener("touchend", stopResize);
         }
 
-        // Update number display with image-based numbers
+        // Update the meter display with images of numbers
         function updateDisplay() {
-            const input = document.getElementById('meterInput').value;
-            const numberDisplay = document.getElementById('numberDisplay');
-            numberDisplay.innerHTML = ''; // Clear previous display
+            const inputValue = document.getElementById("meterInput").value;
+            const numberDisplay = document.getElementById("numberDisplay");
+            numberDisplay.innerHTML = ""; // Clear current display
 
-            if (/[^0-9.]/.test(input) || (input.match(/\./g) || []).length > 1) {
-                numberDisplay.textContent = "Invalid Input";
-            } else {
-                const digits = input.split('');
-                digits.forEach(digit => {
-                    if (digit >= '0' && digit <= '9') {
-                        const img = document.createElement('img');
-                        img.src = `./${digit}.jpeg`;  // Assuming the number images are named 0.jpg, 1.jpg, etc.
-                        img.alt = digit;
-                        numberDisplay.appendChild(img);
-                    }
-                });
-            }
+            const digits = inputValue.split(""); // Split input into digits
+            digits.forEach((digit) => {
+                if (digit >= "0" && digit <= "9") {
+                    const img = document.createElement("img");
+                    img.src = `./${digit}.jpg`; // Make sure the images are named 0.jpg, 1.jpg, etc.
+                    img.alt = digit;
+                    numberDisplay.appendChild(img);
+                }
+            });
         }
 
-        // Change font size
+        // Change font size for numbers
         function changeFontSize() {
             const fontSize = document.getElementById('fontSizeInput').value;
             const numberDisplay = document.getElementById('numberDisplay');
@@ -260,7 +290,26 @@
             unitDisplay.style.fontSize = `${fontSizeUnit}px`;
         }
 
-        // Change color of the meter display
+        // Change the size of number images
+        function changeImageSize() {
+            const imageSize = document.getElementById('imageSizeInput').value;
+            const numberImages = document.querySelectorAll('.number-display img');
+            numberImages.forEach(img => {
+                img.style.width = `${imageSize}px`;
+                img.style.height = 'auto'; // Maintain aspect ratio
+            });
+        }
+
+        // Adjust space between images
+        function changeSpace() {
+            const space = document.getElementById('spaceInput').value;
+            const numberImages = document.querySelectorAll('.number-display img');
+            numberImages.forEach(img => {
+                img.style.margin = `0 ${space}px`;
+            });
+        }
+
+        // Change background color
         function changeColor(color) {
             meterOutput.style.backgroundColor = color;
         }
