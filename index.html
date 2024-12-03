@@ -8,8 +8,10 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #222;
-            color: #fff;
+            background-image: url('./img.jpeg'); /* Use the correct file name */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -19,24 +21,37 @@
         }
 
         .meter-display {
-            position: relative;
+            position: absolute;
             display: flex;
             justify-content: center;
             align-items: center;
-            top: 200px;
+            top: 150px;
+            left: 150px;
             background-color: #39812f;
             padding: 20px;
-            width: 100%;
             width: 400px;
             height: 100px;
             border-radius: 10px;
             box-shadow: 0px 0px 20px rgba(57, 129, 47, 0.4);
             overflow: hidden;
+            cursor: grab;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 20px;
+            height: 20px;
+            background-color: transparent; /* Transparent background */
+            border: 2px solid #39812f;
+            border-radius: 50%;
+            cursor: nwse-resize;
         }
 
         .number-display {
             font-family: 'Seven Segment', sans-serif;
-            font-size: 75px;
+            font-size: 70px; /* Default font size is 70px */
             color: #000;
             white-space: nowrap;
             overflow: hidden;
@@ -44,7 +59,7 @@
 
         .unit {
             font-family: Arial, sans-serif;
-            font-size: 30px;
+            font-size: 30px; /* Default font size for unit */
             color: #000;
             position: absolute;
             bottom: 10px;
@@ -61,6 +76,30 @@
             width: 250px;
             text-align: center;
             margin-top: 590px;
+        }
+
+        .font-size-input {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .font-size-input-unit {
+            font-size: 20px;
+            padding: 10px;
+            border: none;
+            border-bottom: 2px solid #39812f;
+            background-color: transparent;
+            color: #fff;
+            width: 100px;
+            text-align: center;
+            margin-top: 10px;
         }
 
         .color-buttons {
@@ -101,9 +140,13 @@
 <body>
     <div class="meter-display" id="meterOutput">
         <div class="number-display" id="numberDisplay">0</div>
-        <span class="unit">kW h</span>
+        <span class="unit" id="unitDisplay">kW h</span>
+        <div class="resize-handle"></div>
     </div>
     <input type="text" id="meterInput" placeholder="Enter number (e.g., 123.45)" oninput="updateDisplay()">
+
+    <input type="number" id="fontSizeInput" class="font-size-input" value="70" min="10" max="200" oninput="changeFontSize()">
+    <input type="number" id="fontSizeInputUnit" class="font-size-input-unit" value="30" min="10" max="100" oninput="changeFontSizeUnit()">
     
     <div class="color-buttons">
         <button class="color-button color-button-1" onclick="changeColor('#6b7c6a')">🔘</button>
@@ -112,13 +155,77 @@
     </div>
 
     <script>
-        let currentColor = '#39812f'; // Default color
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY, startWidth, startHeight, offsetX, offsetY;
 
+        const meterOutput = document.getElementById("meterOutput");
+        const resizeHandle = document.querySelector(".resize-handle");
+
+        // Dragging functionality
+        meterOutput.addEventListener("mousedown", startDrag);
+        meterOutput.addEventListener("touchstart", startDrag, { passive: false });
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("touchmove", drag, { passive: false });
+        document.addEventListener("mouseup", stopDrag);
+        document.addEventListener("touchend", stopDrag);
+
+        function startDrag(e) {
+            if (e.target === resizeHandle) return; // Skip if resizing
+            isDragging = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            offsetX = meterOutput.offsetLeft;
+            offsetY = meterOutput.offsetTop;
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            meterOutput.style.left = `${offsetX + (currentX - startX)}px`;
+            meterOutput.style.top = `${offsetY + (currentY - startY)}px`;
+        }
+
+        function stopDrag() {
+            isDragging = false;
+        }
+
+        // Resizing functionality
+        resizeHandle.addEventListener("mousedown", startResize);
+        resizeHandle.addEventListener("touchstart", startResize, { passive: false });
+
+        function startResize(e) {
+            isResizing = true;
+            startX = e.touches ? e.touches[0].clientX : e.clientX;
+            startY = e.touches ? e.touches[0].clientY : e.clientY;
+            startWidth = meterOutput.offsetWidth;
+            startHeight = meterOutput.offsetHeight;
+
+            document.addEventListener("mousemove", resize);
+            document.addEventListener("touchmove", resize, { passive: false });
+            document.addEventListener("mouseup", stopResize);
+            document.addEventListener("touchend", stopResize);
+        }
+
+        function resize(e) {
+            if (!isResizing) return;
+            const currentX = e.touches ? e.touches[0].clientX : e.clientX;
+            const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+            const newWidth = startWidth + (currentX - startX);
+            const newHeight = startHeight + (currentY - startY);
+            meterOutput.style.width = `${newWidth}px`;
+            meterOutput.style.height = `${newHeight}px`;
+        }
+
+        function stopResize() {
+            isResizing = false;
+        }
+
+        // Update number display
         function updateDisplay() {
             const input = document.getElementById('meterInput').value;
             const numberDisplay = document.getElementById('numberDisplay');
-
-            // Replace multiple dots or invalid inputs
             if (/[^0-9.]/.test(input) || (input.match(/\./g) || []).length > 1) {
                 numberDisplay.textContent = "Invalid Input";
             } else {
@@ -126,13 +233,22 @@
             }
         }
 
-        function changeColor(color) {
-            const meterOutput = document.getElementById('meterOutput');
-            meterOutput.style.backgroundColor = color;
-            currentColor = color;
+        // Change font size of the number
+        function changeFontSize() {
+            const fontSize = document.getElementById('fontSizeInput').value;
+            document.getElementById('numberDisplay').style.fontSize = `${fontSize}px`;
         }
 
-        updateDisplay(); // Initialize with default value
+        // Change font size of the unit
+        function changeFontSizeUnit() {
+            const fontSizeUnit = document.getElementById('fontSizeInputUnit').value;
+            document.getElementById('unitDisplay').style.fontSize = `${fontSizeUnit}px`;
+        }
+
+        // Change color of the meter display
+        function changeColor(color) {
+            meterOutput.style.backgroundColor = color;
+        }
     </script>
 </body>
 </html>
