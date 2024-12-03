@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-image: url('./img.jpeg'); /* Use the correct file name */
+            background-image: url('./img.jpeg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -43,7 +43,7 @@
             right: 5px;
             width: 20px;
             height: 20px;
-            background-color: transparent; /* Transparent background */
+            background-color: transparent;
             border: 2px solid #81af81;
             border-radius: 50%;
             cursor: nwse-resize;
@@ -51,16 +51,18 @@
 
         .number-display {
             display: flex;
+            align-items: center;
         }
 
         .number-display img {
-            width: 50px; /* Adjust the size of the numbers */
+            width: 50px;
             height: auto;
+            transition: width 0.3s ease;
         }
 
         .unit {
             font-family: Arial, sans-serif;
-            font-size: 30px; /* Default font size for unit */
+            font-size: 30px;
             color: #000;
             position: absolute;
             bottom: 10px;
@@ -101,6 +103,16 @@
             width: 100px;
             text-align: center;
             margin-top: 10px;
+        }
+
+        .size-button {
+            margin: 0 10px;
+            padding: 5px 10px;
+            background-color: #39812f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
 
         .color-buttons {
@@ -148,7 +160,12 @@
     </div>
     <input type="text" id="meterInput" placeholder="Enter number (e.g., 123.45)" oninput="updateDisplay()">
 
-    <input type="number" id="fontSizeInput" class="font-size-input" value="70" min="10" max="200" oninput="changeFontSize()">
+    <div>
+        <input type="number" id="fontSizeInput" class="font-size-input" value="70" min="10" max="200" oninput="changeFontSize()">
+        <button class="size-button" onclick="changeNumberImageSize(-2)">-</button>
+        <button class="size-button" onclick="changeNumberImageSize(2)">+</button>
+    </div>
+
     <input type="number" id="fontSizeInputUnit" class="font-size-input-unit" value="30" min="10" max="100" oninput="changeFontSizeUnit()">
     
     <div class="color-buttons">
@@ -161,6 +178,7 @@
         let isDragging = false;
         let isResizing = false;
         let startX, startY, startWidth, startHeight, offsetX, offsetY;
+        let currentNumberImageSize = 50; // Initial image size
 
         const meterOutput = document.getElementById("meterOutput");
         const resizeHandle = document.querySelector(".resize-handle");
@@ -238,12 +256,24 @@
                 digits.forEach(digit => {
                     if (digit >= '0' && digit <= '9') {
                         const img = document.createElement('img');
-                        img.src = `./${digit}.jpeg`;  // Assuming the number images are named 0.jpg, 1.jpg, etc.
+                        img.src = `./${digit}.jpeg`;
                         img.alt = digit;
+                        img.style.width = `${currentNumberImageSize}px`;
                         numberDisplay.appendChild(img);
                     }
                 });
             }
+        }
+
+        // Change number image size
+        function changeNumberImageSize(change) {
+            const minSize = 10;
+            const maxSize = 200;
+            currentNumberImageSize = Math.min(Math.max(currentNumberImageSize + change, minSize), maxSize);
+            const images = document.querySelectorAll('#numberDisplay img');
+            images.forEach(img => {
+                img.style.width = `${currentNumberImageSize}px`;
+            });
         }
 
         // Change font size
