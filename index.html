@@ -142,7 +142,8 @@
         }
 
         .color-button-2 {
-            background-color: #39812f;
+            background-color: #81af81;
+
         }
 
         .color-button-3 {
@@ -161,7 +162,7 @@
     <input type="text" id="meterInput" placeholder="Enter number (e.g., 123.45)" oninput="updateDisplay()">
 
     <div>
-        <input type="number" id="fontSizeInput" class="font-size-input" value="70" min="10" max="200" oninput="changeFontSize()">
+       
         <button class="size-button" onclick="changeNumberImageSize(-2)">-</button>
         <button class="size-button" onclick="changeNumberImageSize(2)">+</button>
     </div>
@@ -170,7 +171,7 @@
     
     <div class="color-buttons">
         <button class="color-button color-button-1" onclick="changeColor('#6b7c6a')">🔘</button>
-        <button class="color-button color-button-2" onclick="changeColor('#39812f')">🔘</button>
+        <button class="color-button color-button-2" onclick="changeColor('#81af81')">🔘</button>
         <button class="color-button color-button-3" onclick="changeColor('#8fc0e3')">🔘</button>
     </div>
 
@@ -254,13 +255,23 @@
             } else {
                 const digits = input.split('');
                 digits.forEach(digit => {
-                    if (digit >= '0' && digit <= '9') {
-                        const img = document.createElement('img');
+                    const img = document.createElement('img');
+                    if (digit >= '0' && digit <= '9' && digit !== '1') {
                         img.src = `./${digit}.jpeg`;
-                        img.alt = digit;
                         img.style.width = `${currentNumberImageSize}px`;
-                        numberDisplay.appendChild(img);
+                    } else if (digit === '.') {
+                        img.src = './Point.jpeg';
+                        img.style.width = `${currentNumberImageSize-35}px`;
+                    
                     }
+                    else{
+                        img.src = `./${digit}.jpeg`;
+                        img.style.width = `${currentNumberImageSize-33}px`;
+                    }
+                    img.alt = digit;
+                   
+                    numberDisplay.appendChild(img);
+
                 });
             }
         }
